@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -32,12 +33,20 @@ public class IndexServlet extends HttpServlet {
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        //DAOのエンティティーマネージャーを使えるようにする
         EntityManager em = DBUtil.createEntityManager();
 
+        //DAOを使い、DTOから全てのデータをListに詰める
         List<Task> tasks = em.createNamedQuery("getAllTasks",Task.class).getResultList();
-        response.getWriter().append(Integer.valueOf(tasks.size()).toString());
 
         em.close();
+
+        //リクエストスコープにtasksﾘｽﾄを保存
+        request.setAttribute("tasks", tasks);
+
+        //tasksを持ってビュー(index.jsp)に遷移
+        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/tasks/index.jsp");
+        rd.forward(request, response);
     }
 
 }

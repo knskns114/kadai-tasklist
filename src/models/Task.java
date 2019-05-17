@@ -17,7 +17,8 @@ import javax.persistence.Table;
             name = "getAllTasks",
             query = "SELECT m FROM Task AS m ORDER BY m.id DESC"
             )
-})
+}) //Taskテーブルから全てを取り出す命令に、"getAllTasks"という名前をつけた
+
 @Table(name = "tasks")
 public class Task {
 
