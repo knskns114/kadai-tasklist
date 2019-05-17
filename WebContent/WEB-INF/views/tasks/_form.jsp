@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<label for="content">タスク内容</label>
+<label for="content">タスク内容</label><br />
 <!-- ﾃｷｽﾄﾎﾞｯｸｽのﾃﾞｰﾀをcontentという名前でdoPostﾒｿｯﾄに送るﾞ-->
 <input type="text" name="content" value="${task.content}"/>
 <br /><br />
