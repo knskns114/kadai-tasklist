@@ -2,8 +2,10 @@ package controllers;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -11,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import models.Task;
+import models.validators.TasksValidator;
 import util.DBUtil;
 
 /**
@@ -44,17 +47,31 @@ public class UpdateServlet extends HttpServlet {
             Timestamp currentTime = new Timestamp(System.currentTimeMillis());
             t.setUpdated_at(currentTime);
 
-            //データベース更新の一連の流れ
-            em.getTransaction().begin();
-            em.getTransaction().commit();
-            request.getSession().setAttribute("flush", "更新が完了しました。");
-            em.close();
+            //バリデーションを実行してエラーがあったらedit.jspに戻る
+            List<String> errors = TasksValidator.validate(t);
+            if(errors.size() > 0){
+                em.close();
 
-            //セッションスコープの上の不要になったデータを削除
-            request.getSession().removeAttribute("task_id");
+                //フォームにトークン、初期設定値、エラーを送る
+                request.setAttribute("_token", request.getSession().getId());
+                request.setAttribute("task", t);
+                request.setAttribute("errors", errors);
 
-            //indexへ遷移
-            response.sendRedirect(request.getContextPath() + "/index");
+                RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/tasks/edit.jsp");
+                rd.forward(request, response);
+            }else{
+                //データベース更新の一連の流れ
+                em.getTransaction().begin();
+                em.getTransaction().commit();
+                request.getSession().setAttribute("flush", "更新が完了しました。");
+                em.close();
+
+                //セッションスコープの上の不要になったデータを削除
+                request.getSession().removeAttribute("task_id");
+
+                //indexへ遷移
+                response.sendRedirect(request.getContextPath() + "/index");
+            }
         }
     }
 
