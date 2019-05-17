@@ -36,15 +36,32 @@ public class IndexServlet extends HttpServlet {
         //DAOのエンティティーマネージャーを使えるようにする
         EntityManager em = DBUtil.createEntityManager();
 
-        //DAOを使い、DTOから全てのデータをListに詰める
-        List<Task> tasks = em.createNamedQuery("getAllTasks",Task.class).getResultList();
+        int page = 1;
+        try{
+            page = Integer.parseInt(request.getParameter("page"));
+        }catch(NumberFormatException e){}
+
+        List<Task> tasks = em.createNamedQuery("getAllTasks",Task.class)
+                .setFirstResult(15 * (page -1))
+                .setMaxResults(15)
+                .getResultList();
+
+        long tasks_count = (long)em.createNamedQuery("getTasksCount",Long.class)
+                .getSingleResult();
 
         em.close();
 
-        //リクエストスコープにtasksﾘｽﾄを保存
         request.setAttribute("tasks", tasks);
+        request.setAttribute("tasks_count", tasks_count);
+        request.setAttribute("page", page);
+
+        if(request.getSession().getAttribute("flush") != null){
+            request.setAttribute("flush", request.getSession().getAttribute("flush"));
+            request.getSession().removeAttribute("flush");
+        }
 
         //tasksを持ってビュー(index.jsp)に遷移
+        // とflushも
         RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/tasks/index.jsp");
         rd.forward(request, response);
     }
